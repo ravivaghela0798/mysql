@@ -153,30 +153,33 @@ SELECT * from employee_hobby;
 ------------------------------------------------------------------------------------
 -- Select single query to get all employee name, all hobby_name in single column
 ------------------------------------------------------------------------------------
-SELECT CONCAT(e.first_name, ' ', e.last_name, " 's hobby ", h.name) AS "Hobby"
-FROM employee_hobby AS eh 
-INNER JOIN hobby h ON h.id = eh.fk_hobby_id
-INNER JOIN employee AS e ON e.id = eh.fk_employee_id    
+SELECT CONCAT(first_name, ' ', last_name) AS 'Name and Hobbies' FROM employee 
+UNION
+SELECT NAME FROM hobby;
 
 ------------------------------------------------------------------------------------
--- select query to get  employee name, his/her employee_salary
+-- select query to get employee name, his/her employee_salary
 ------------------------------------------------------------------------------------
 SELECT CONCAT(e.first_name, ' ', e.last_name) AS "Employee Name", 
-       ROUND(es.salary,3) AS "Employee Salary" FROM employee_salary AS es 
-INNER JOIN employee AS e ON e.id = es.fk_employee_id    
-
+IF(es.salary IS NOT NULL, ROUND(es.salary,3), 0.000) AS "Employee Salary" 
+FROM employee AS e 
+LEFT JOIN employee_salary AS es ON e.id = es.fk_employee_id;
+     
 ------------------------------------------------------------------------------------
 /* Select query to get employee name, total salary of employee, 
 *   hobby name(comma-separated - you need to use subquery for hobby name)
 */
 ------------------------------------------------------------------------------------
-SELECT CONCAT(e.first_name, " ", e.last_name) AS "Employee Name", 
-	ROUND(SUM(es.salary),3) AS "Total Salary",
+SELECT 
+	CONCAT(e.first_name, " ", e.last_name) AS "Employee Name", 
+	IF(ROUND(SUM(es.salary),3) IS NOT NULL, ROUND(SUM(es.salary),3), 0.000) AS "Total Salary",
 	(
 		SELECT GROUP_CONCAT(h.name) FROM hobby h
 		LEFT JOIN employee_hobby eh ON h.id = eh.fk_hobby_id WHERE e.id = eh.fk_employee_id
-	) AS "Hobbies" FROM employee e
+	) AS "Hobbies" 
+	FROM employee e
 	LEFT JOIN employee_salary es ON e.id = es.fk_employee_id
 GROUP BY e.id;
 
+------------------------------------------------------------------------------------
 
